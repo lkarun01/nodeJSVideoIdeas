@@ -1,17 +1,21 @@
 const express = require("express");
 const exphbs = require("express-handlebars");
 const mongoose = require("mongoose");
+const passport = require("passport");
 const bodyParser = require("body-parser");
 const methodOverride = require("method-override");
 const flash = require("connect-flash");
 const session = require("express-session");
-const path = require('path');
+const path = require("path");
 
 const app = express();
 
 // Load routes
-const ideas = require('./routes/ideas');
-const users = require('./routes/users');
+const ideas = require("./routes/ideas");
+const users = require("./routes/users");
+
+// Passport config
+require("./config/passport")(passport);
 
 // Handle bars middleware
 app.engine("handlebars", exphbs({ defaultLayout: "main" }));
@@ -22,7 +26,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // Static folder
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
 // override with POST having ?_method=DELETE
 app.use(methodOverride("_method"));
@@ -51,23 +55,23 @@ mongoose
   .connect("mongodb://localhost/vidjot-dev", { useNewUrlParser: true })
   .then(() => {
     console.log("Mongo DB connected...");
-})
+  })
   .catch(err => console.log(err));
 
 // Index Route
 app.get("/", (req, res) => {
-    const title = "Welcome";
-    res.render("INDEX", { title: title });
+  const title = "Welcome";
+  res.render("INDEX", { title: title });
 });
 
-  // About Route
+// About Route
 app.get("/about", (req, res) => {
-    res.render("ABOUT");
+  res.render("ABOUT");
 });
 
 // Use Routes
-app.use('/ideas', ideas);
-app.use('/users', users);
+app.use("/ideas", ideas);
+app.use("/users", users);
 
 const port = 5000;
 
