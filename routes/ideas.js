@@ -1,14 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
+const { ensureAuthenticated } = require("../helpers/auth");
 
 // Load Idea model
 require("./../models/Idea");
 const Ideas = mongoose.model("ideas");
 
 // Ideas Page
-router.get("/", (req, res) => {
-  Ideas.find({})
+router.get("/", ensureAuthenticated, (req, res) => {
+  Ideas.find({ user: req.user.id })
     .sort({ date: "desc" })
     .then(idea => {
       res.render("ideas/index", {
@@ -18,23 +19,28 @@ router.get("/", (req, res) => {
 });
 
 // Add Ideas Form
-router.get("/add", (req, res) => {
+router.get("/add", ensureAuthenticated, (req, res) => {
   res.render("ideas/add");
 });
 
 // Edit Ideas Form
-router.get("/edit/:id", (req, res) => {
+router.get("/edit/:id", ensureAuthenticated, (req, res) => {
   Ideas.findOne({
     _id: req.params.id
   }).then(idea => {
-    res.render("ideas/edit", {
-      idea: idea
-    });
+    if (idea.user != req.user.id) {
+      req.flash("error_msg", "Not Authorized");
+      res.redirect("/ideas");
+    } else {
+      res.render("ideas/edit", {
+        idea: idea
+      });
+    }
   });
 });
 
 // Process forms
-router.post("/", (req, res) => {
+router.post("/", ensureAuthenticated, (req, res) => {
   let errors = [];
   if (!req.body.title) {
     errors.push({ text: "Please add a title" });
@@ -54,7 +60,8 @@ router.post("/", (req, res) => {
   } else {
     const newUser = {
       title: req.body.title,
-      details: req.body.details
+      details: req.body.details,
+      user: req.user.id
     };
 
     new Ideas(newUser).save().then(idea => {
@@ -65,7 +72,7 @@ router.post("/", (req, res) => {
 });
 
 // Edit form process
-router.put("/:id", (req, res) => {
+router.put("/:id", ensureAuthenticated, (req, res) => {
   Ideas.findOne({
     _id: req.params.id
   }).then(idea => {
@@ -80,7 +87,7 @@ router.put("/:id", (req, res) => {
 });
 
 // Delete form process
-router.delete("/:id", (req, res) => {
+router.delete("/:id", ensureAuthenticated, (req, res) => {
   Ideas.deleteOne({ _id: req.params.id }).then(() => {
     req.flash("success_msg", "Video Idea Removed");
     res.redirect("/ideas");

@@ -40,6 +40,11 @@ app.use(
   })
 );
 
+//Passport middleware
+//The must be calling after the app.use(session({}))
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(flash());
 
 // Global Variables
@@ -47,16 +52,31 @@ app.use((req, res, next) => {
   res.locals.success_msg = req.flash("success_msg");
   res.locals.error_msg = req.flash("error_msg");
   res.locals.error = req.flash("error");
+  res.locals.user = req.user || null;
   next();
 });
 
+// DB config
+const db = require("./config/database");
+
 // Commect to mongoose
 mongoose
-  .connect("mongodb://localhost/vidjot-dev", { useNewUrlParser: true })
+  .connect(db.mongoURI, { useNewUrlParser: true })
   .then(() => {
     console.log("Mongo DB connected...");
   })
   .catch(err => console.log(err));
+
+// const MongoClient = require("mongodb").MongoClient;
+// const uri =
+//   "mongodb+srv://lalanke:12345@cluster0-sgfqa.azure.mongodb.net/vidjot-prod?retryWrites=true";
+// const client = new MongoClient(uri, { useNewUrlParser: true });
+// //console.log(MongoClient);
+// client.connect(err => {
+//   const collection = client.db("vidjot-prod").collection("ideas");
+//   //console.log(collection);
+//   client.close();
+// });
 
 // Index Route
 app.get("/", (req, res) => {
@@ -73,7 +93,7 @@ app.get("/about", (req, res) => {
 app.use("/ideas", ideas);
 app.use("/users", users);
 
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 app.listen(port, () => {
   console.log(`Server started om port ${port}`);
