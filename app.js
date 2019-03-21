@@ -17,6 +17,20 @@ const users = require("./routes/users");
 // Passport config
 require("./config/passport")(passport);
 
+// DB config
+const db = require("./config/database");
+
+// Map global promise - get rid of warning
+mongoose.Promise = global.Promise;
+
+// Commect to mongoose
+mongoose
+  .connect(db.mongoURI, { useNewUrlParser: true })
+  .then(() => {
+    console.log("Mongo DB connected...");
+  })
+  .catch(err => console.log(err));
+
 // Handle bars middleware
 app.engine("handlebars", exphbs({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
@@ -56,17 +70,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// DB config
-const db = require("./config/database");
-
-// Commect to mongoose
-mongoose
-  .connect(db.mongoURI, { useNewUrlParser: true })
-  .then(() => {
-    console.log("Mongo DB connected...");
-  })
-  .catch(err => console.log(err));
-
 // const MongoClient = require("mongodb").MongoClient;
 // const uri =
 //   "mongodb+srv://lalanke:12345@cluster0-sgfqa.azure.mongodb.net/vidjot-prod?retryWrites=true";
@@ -81,12 +84,12 @@ mongoose
 // Index Route
 app.get("/", (req, res) => {
   const title = "Welcome";
-  res.render("INDEX", { title: title });
+  res.render("index", { title: title });
 });
 
 // About Route
 app.get("/about", (req, res) => {
-  res.render("ABOUT");
+  res.render("about");
 });
 
 // Use Routes
