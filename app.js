@@ -29,7 +29,7 @@ mongoose
   .then(() => {
     console.log("Mongo DB connected...");
   })
-  .catch(err => console.log(err));
+  .catch(err => console.log("connection error lalaaaaaaaaaaa" + err));
 
 // Handle bars middleware
 app.engine("handlebars", exphbs({ defaultLayout: "main" }));
